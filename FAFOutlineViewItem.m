@@ -92,13 +92,36 @@
 	return representedObject;
 }
 
-
+- (void) reload
+{
+	/*
+	 
+	 Here we may be faced with any of the following senarios:
+	 
+	 for a represented object that is an item...
+	 (1) One or more of the attributes of the represented object have changed.
+	 -> in this case reload need do nothing since the attributes are lazily fetched.
+	 
+	 for a represented object that is a collection...
+	 (1) one or more children of the represented object may have been added.
+	 -> 
+	 (2) one or more children of the represented object may have been removed.
+	 -> in this case we should have been told, so cant do anything here.
+	 (3) one or more children of the represented object may have been changed.
+	 -> in this case telling each child to reload will suffice.
+ 
+	 */
+	
+	if ([self expandable])
+		[children makeObjectsPerformSelector:@selector(reload)];
+}
 
 - (BOOL) expandable
 {
 	if ( [representedObject respondsToSelector:@selector(expandable)] ) // e.g. custom object
 		return [representedObject expandable];
-	else if ( [representedObject isKindOfClass:[NSArray class]] ) // NSArray
+	else if ( [representedObject respondsToSelector:@selector(count)] ||
+		[representedObject respondsToSelector:@selector(numberOfChildren)]) // collection
 		return YES;
 	
 	return NO;
@@ -108,7 +131,7 @@
 - (unsigned) numberOfChildren
 {
 	
-	if ( ! children )
+	//if ( ! children )
 	{
 		unsigned capacity;
 		
@@ -117,17 +140,22 @@
 		if ([representedObject isKindOfClass:[NSArray class]])
 		{
 			capacity = [representedObject count];
-			children = [[NSMutableArray alloc] initWithCapacity:capacity];
-			unsigned i;
-			for (i = 0; i < capacity; i++)
+			if ( ! children || [children count] == 0 )
 			{
-				FAFOutlineViewItem* item = [[[self class] alloc] initWithItem: 
-					[representedObject objectAtIndex:i]];
-				[item setParent:self];
-				[item setOutlineView:outlineView];
-				[children addObject:item];
-				[item release];
-				if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
+				[children release];
+				children = [[NSMutableArray alloc] initWithCapacity:capacity];
+				unsigned i;
+				for (i = 0; i < capacity; i++)
+				{
+					FAFOutlineViewItem* item = [[[self class] alloc] initWithItem: 
+						[representedObject objectAtIndex:i]];
+					[item setParent:self];
+					[item setOutlineView:outlineView];
+					[children addObject:item];
+					[item release];
+					if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
+				}
+				
 			}
 			
 		}
@@ -138,20 +166,24 @@
 		else if ([representedObject respondsToSelector:@selector(numberOfChildren)])
 		{
 			capacity = [representedObject numberOfChildren];
-			children = [[NSMutableArray alloc] initWithCapacity:capacity];
-			
-			if ([representedObject respondsToSelector:@selector(childAtIndex:)])
+			if ( ! children || [children count] == 0 )
 			{
-				unsigned i;
-				for (i = 0; i < capacity; i++)
+				[children release];
+				children = [[NSMutableArray alloc] initWithCapacity:capacity];
+				
+				if ([representedObject respondsToSelector:@selector(childAtIndex:)])
 				{
-					FAFOutlineViewItem* item = [[FAFOutlineViewItem alloc] initWithItem: 
-						[representedObject childAtIndex:i]];
-					[item setParent:self];
-					[item setOutlineView:outlineView];
-					[children addObject:item];
-					[item release];
-				}				
+					unsigned i;
+					for (i = 0; i < capacity; i++)
+					{
+						FAFOutlineViewItem* item = [[FAFOutlineViewItem alloc] initWithItem: 
+							[representedObject childAtIndex:i]];
+						[item setParent:self];
+						[item setOutlineView:outlineView];
+						[children addObject:item];
+						[item release];
+					}				
+				}
 			}
 		}
 		
@@ -159,7 +191,7 @@
 		/* no children */
 		else
 		{
-			return 0; //children = [[NSMutableArray alloc] init];
+			return 0;
 		}
 		
 		if (_sortDescriptors && _shouldSort)

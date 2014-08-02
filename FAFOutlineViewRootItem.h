@@ -31,10 +31,7 @@
 
 @interface FAFOutlineViewRootItem : FAFOutlineViewItem
 {
-	Class		OutlineViewItemClass;
 }
-- (Class)OutlineViewItemClass;
-- (void)setOutlineViewItemClass:(Class)value;
 
 
 

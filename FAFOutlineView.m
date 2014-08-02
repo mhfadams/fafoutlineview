@@ -28,6 +28,8 @@ const NSTimeInterval DOUBLE_CLICK_MAX_INTERVAL = 1.0;
 const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 @interface FAFOutlineView (internal)
+
+- (void) setup;
 -(void)doClick:(id)sender;
 -(void)doDoubleClick:(id)sender;
 
@@ -63,8 +65,17 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	self = [super initWithFrame:frameRect];
 	if (nil != self)
 	{
-		//NSLog(@"%s", __PRETTY_FUNCTION__);
-		
+		[self setup];
+
+	}
+	return self;
+}
+
+- (void) setup
+{
+	//NSLog(@"%s", __PRETTY_FUNCTION__);
+	if (inited == 0)
+	{
 		_inDragOperation = NO;
 		
 		realTarget = nil;
@@ -75,16 +86,34 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		_canEditOnNextClick = YES;
 		
 		realDoubleAction = NULL;
-
+		
 		_isOpaque = YES;
-	
+		
 		[self setGridStyleMask:NSTableViewGridNone];
 		_shouldShowLabels = NO;
 		
-
+		OutlineViewItemClass = [FAFOutlineViewItem class];
 	}
-	return self;
+	inited = 1;
 }
+
+
+- (Class)OutlineViewItemClass
+{
+    return OutlineViewItemClass;
+}
+
+- (void)setOutlineViewItemClass:(Class)value
+{
+	if ( ! realDelegate)
+		OutlineViewItemClass = value;
+	else
+	{
+		[NSException raise:NSInternalInconsistencyException
+					format:@"%s: Error: you must set this value before setting my delegate.", __PRETTY_FUNCTION__];
+	}
+}
+
 
 - (id) delegate
 {
@@ -94,15 +123,16 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void) setDelegate: (id) object
 {
-	//NSLog(@"%s", __PRETTY_FUNCTION__);
-	//NSLog(@"%@", object);
 	/*
 	 Turn on the log item below and find a very strange situation when FAFOutlineView is subclassed:
 		this method is called *before* -initWithFrame ! (and after of course).
 	 [super setDelegate:self] must be here, not in init, as it does not work if put in init !
 	 Also, on that first call, object will be nil !
 	 */
-	if (object)
+	//NSLog(@"%s", __PRETTY_FUNCTION__);
+	if (inited == 0) return;
+
+	//if (object)
 	{
 		realDelegate = object;
 		[super setDelegate:self];
@@ -194,6 +224,9 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void)awakeFromNib
 {
+	
+	[self setup];
+
 	_isOpaque = YES;
 
 }
@@ -222,7 +255,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	which is not normally what the delegate wanted.
 	Therefore, we must be sure to return a singleton.
 	*/
-	static FAFOutlineViewRootItem* rItem;
+	//static FAFOutlineViewRootItem* rItem; <- DONT USE STATICS !! they get share across outline views !!
 	if ( ! rItem )
 	{	
 		rItem = [[FAFOutlineViewRootItem alloc] initWithItem:object];
@@ -743,13 +776,17 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void) draggingEnded: (id <NSDraggingInfo>)sender
 {
-	//NSLog(@"%s", __PRETTY_FUNCTION__);
 	_inDragOperation = NO;
-	[super draggingEnded:sender];
+	
+	
+	// Usage under Tiger, NSOutlineView never complained, but under Leopard, crash.
+	//[super draggingEnded:sender];
 }
 
 
 #pragma mark Drag and Drop (highlighting)
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_4
 - (void) _drawDropHighlightOnRow: (int) row
 {
 	[self lockFocus];
@@ -765,6 +802,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	[self unlockFocus];
 	
 }
+#endif
 
 
 

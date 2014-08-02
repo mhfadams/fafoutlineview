@@ -50,6 +50,13 @@
 - (FAFOutlineViewItem*) parent;
 - (void) setParent: (FAFOutlineViewItem*) item;
 
+/*!
+ \brief	forces item to syncronize with model layer.
+ 
+ For performance reasons, you should use any applicable more specific method.
+ */
+- (void) reload;
+
 - (NSArray*) sortDescriptors;
 - (void) setSortDescriptors: (NSArray*) array;
 

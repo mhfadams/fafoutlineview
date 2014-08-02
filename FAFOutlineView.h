@@ -62,7 +62,17 @@ technique and code for row spanning cells, comes from article at MacTech:
 	SEL							realDoubleAction;
 	
 	FAFOutlineViewItem*			rootItem;
+	FAFOutlineViewRootItem*			rItem; // temp for internal use
+	
+	Class		OutlineViewItemClass; // used by outlineview items for creating children.
+	
+	int							inited; // internal use only
+
 }
+
+// following two methods are for childrens use, not our own.
+- (Class)OutlineViewItemClass;
+- (void)setOutlineViewItemClass:(Class)value;
 
 - (FAFOutlineViewItem*) rootItem;
 
