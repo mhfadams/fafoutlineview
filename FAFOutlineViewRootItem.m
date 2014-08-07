@@ -113,7 +113,7 @@
 			
 		}
 		
-		if (_sortDescriptors && _shouldSort)
+		if (children && _sortDescriptors && _shouldSort)
 		{
 			[children sortUsingDescriptors:_sortDescriptors];
 			NSTableColumn* sortColumn = [outlineView tableColumnWithIdentifier:[[_sortDescriptors objectAtIndex:0] key]];
@@ -135,7 +135,7 @@
 	
 	unsigned cnt = [children count];
 	
-	NSLog(@"%s %@ (%u)", __PRETTY_FUNCTION__, self, cnt);
+	//NSLog(@"%s %@ (%u)", __PRETTY_FUNCTION__, self, cnt);
 		
 		
 	return cnt;

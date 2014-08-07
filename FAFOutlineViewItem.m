@@ -94,6 +94,7 @@
 
 - (void) reload
 {
+	//NSLog(@"%s for item: %@", __PRETTY_FUNCTION__, representedObject);
 	/*
 	 
 	 Here we may be faced with any of the following senarios:
@@ -104,16 +105,32 @@
 	 
 	 for a represented object that is a collection...
 	 (1) one or more children of the represented object may have been added.
-	 -> 
+	 -> in this case we should have been told, but will remake all children.
 	 (2) one or more children of the represented object may have been removed.
-	 -> in this case we should have been told, so cant do anything here.
+	 -> in this case we should have been told, but will remake all children.
 	 (3) one or more children of the represented object may have been changed.
 	 -> in this case telling each child to reload will suffice.
  
 	 */
 	
 	if ([self expandable])
-		[children makeObjectsPerformSelector:@selector(reload)];
+	{
+		NSUInteger numberOfChildren;
+		if ( [representedObject respondsToSelector:@selector(count)] ) // e.g. custom object
+			numberOfChildren = [representedObject count];
+		else if ( [representedObject respondsToSelector:@selector(numberOfChildren)] ) // collection
+			numberOfChildren = [representedObject numberOfChildren];
+		
+		if ([children count] != numberOfChildren)
+		{
+			[children release]; children = nil;
+			[self numberOfChildren]; // force remake of children.
+		}
+		else
+			[children makeObjectsPerformSelector:@selector(reload)];
+
+	}
+
 }
 
 - (BOOL) expandable
@@ -232,6 +249,10 @@
 - (void) removeChild: (FAFOutlineViewItem*) item
 {
 	[children removeObject:item];
+	if (_parent)
+		[outlineView reloadItem:_parent];
+	else
+		[outlineView reloadData];
 }
 
 - (id) objectValueForTableColumn:(NSTableColumn *)tableColumn

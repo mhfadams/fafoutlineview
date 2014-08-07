@@ -30,13 +30,14 @@ DataSource and Delegation Methodology
 ---------------------------------------------
 FAFOutlineView decentralizes the NSOutlineView datasourcing. There is a controller object paired up with each model object. A default controller object (FAFOutlineViewItem) is provided for use with NSString, NSArray, and NSDictionary model objects, but can be subclassed for custom model objects.
 The delegate provides a root item and that root item (controller object) and its children then on act as the data source for their represented object.
+Drag-and-drop is still handled by the outline view delegate.
 
 
 Basic Setup
 ----------------------------------------------
 - Create your usual NSOutlineView in your nib as usual;
 - implement [code]- (FAFOutlineViewItem*) rootItem;[/code] in your outline view delegate returning 
-
+(... to be continued ...)
 
 
 

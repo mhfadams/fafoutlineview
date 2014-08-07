@@ -66,7 +66,7 @@ technique and code for row spanning cells, comes from article at MacTech:
 	
 	Class		OutlineViewItemClass; // used by outlineview items for creating children.
 	
-	int							inited; // internal use only
+	int							inited; // internal use only by -[FAFOutlineView rootItemWithObject:]
 
 }
 

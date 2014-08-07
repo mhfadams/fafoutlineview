@@ -205,7 +205,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 -(void)dealloc
 {
 	[rootItem release];
-	[super dealloc];
+	//[super dealloc]; //<- why cant I continue it ? why does [self setDataSource:] get called in [super dealloc] ?
 }
 
 #pragma mark Transparency
@@ -255,12 +255,21 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	which is not normally what the delegate wanted.
 	Therefore, we must be sure to return a singleton.
 	*/
-	//static FAFOutlineViewRootItem* rItem; <- DONT USE STATICS !! they get share across outline views !!
+	//static FAFOutlineViewRootItem* rItem; <- DONT USE STATICS !! they get shared across outline views !!
 	if ( ! rItem )
 	{	
 		rItem = [[FAFOutlineViewRootItem alloc] initWithItem:object];
 		[rItem setOutlineView:self];
 		[rItem autorelease];
+	}
+	else // if object is different than current, then still make new rootItem
+	{
+		if ( ! ([[rItem representedObject] isEqual: object]) )
+		{
+			//NSLog(@"returning new root");
+			rItem = [[[FAFOutlineViewRootItem alloc] initWithItem:object] autorelease];
+			[rItem setOutlineView:self];
+		}
 	}
 	return rItem;
 }
@@ -268,8 +277,9 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void) reloadData
 {
-	[rootItem autorelease]; // <-- this has to be *auto*release, due to the multiple call backs
-	rootItem = [[realDelegate rootItem] retain];
+	[rootItem autorelease]; // <-- this has to be *auto*release, because we might get handed back the same item.
+	rootItem = [[realDelegate rootItemForOutlineView:self] retain];
+	[rootItem reload];
 	[super reloadData];
 }
 
@@ -584,8 +594,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
 	//NSLog(@"%s", __PRETTY_FUNCTION__);
-	if (item == nil)
-		return [[self rootItem] expandable];
+	if (item == nil) return YES;
+		//return [[self rootItem] expandable];
 	
 	return [item expandable];
 }
