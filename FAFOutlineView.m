@@ -93,6 +93,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		_shouldShowLabels = NO;
 		
 		OutlineViewItemClass = [FAFOutlineViewItem class];
+		
+		delegateHandlesToolTips = NSMixedState;
 	}
 	inited = 1;
 }
@@ -111,6 +113,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	{
 		[NSException raise:NSInternalInconsistencyException
 					format:@"%s: Error: you must set this value before setting my delegate.", __PRETTY_FUNCTION__];
+		NSLog(@"%s: Error: you must set this value before setting my delegate.", __PRETTY_FUNCTION__);
 	}
 }
 
@@ -130,14 +133,22 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	 Also, on that first call, object will be nil !
 	 */
 	//NSLog(@"%s", __PRETTY_FUNCTION__);
-	if (inited == 0) return;
+	if (inited == 0) [self setup];
 
-	//if (object)
+	if (object)
 	{
+		if ( ! rootItem )
+		{
+			[NSException raise:NSInternalInconsistencyException
+						format:@"%s: Error: you must call setRootItem: before setting my delegate.", __PRETTY_FUNCTION__];
+			NSLog(@"%s: Error: you must call setRootItem: before setting my delegate.", __PRETTY_FUNCTION__);
+			NSLog(@"Example call: [myOutlineView setRootItem:[myOutlineView rootItemWithObject:[NSMutableArray new]]];");
+			
+		}
+
 		realDelegate = object;
 		[super setDelegate:self];
 		[super setDataSource:self];
-		//rootItem = [[realDelegate rootItem] retain];
 		
 		[[self tableColumns] makeObjectsPerformSelector:@selector(setEditable:) withObject:NO];
 		/*
@@ -156,6 +167,13 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		_action = @selector(doClick:);
 		//[super setDoubleAction:@selector(doDoubleClick:)];
 		_doubleAction = @selector(doDoubleClick:);
+		
+		
+		if ([realDelegate respondsToSelector:@selector(outlineView:toolTipForCell:rect:tableColumn:item:mouseLocation:)])
+			delegateHandlesToolTips = NSOnState;
+		else
+			delegateHandlesToolTips = NSOffState;
+		
 		
 		[self reloadData];
 	}
@@ -226,9 +244,6 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 {
 	
 	[self setup];
-
-	_isOpaque = YES;
-
 }
 
 - (void)drawBackgroundInClipRect:(NSRect)clipRect
@@ -246,8 +261,19 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	return rootItem;
 }
 
+- (void) setRootItem:(FAFOutlineViewItem*)item
+{
+	[rootItem autorelease];
+	rootItem = [item retain];
+	[self reloadData];
+}
+
 - (FAFOutlineViewRootItem*) rootItemWithObject:(id) object
 {
+	rItem = [[[FAFOutlineViewRootItem alloc] initWithItem:object] autorelease];
+	[rItem setOutlineView:self];
+	return rItem;
+
 	/* NOTICE:
 	Every time we are told to reloadData, which is often, and certainly more than once, we must ask
 	the delegate for the root item (since it may have changed).
@@ -256,6 +282,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	Therefore, we must be sure to return a singleton.
 	*/
 	//static FAFOutlineViewRootItem* rItem; <- DONT USE STATICS !! they get shared across outline views !!
+	/*
 	if ( ! rItem )
 	{	
 		rItem = [[FAFOutlineViewRootItem alloc] initWithItem:object];
@@ -264,21 +291,24 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	}
 	else // if object is different than current, then still make new rootItem
 	{
-		if ( ! ([[rItem representedObject] isEqual: object]) )
+		if ( ! ([[rItem representedObject] isEqualToArray: object]) )
 		{
-			//NSLog(@"returning new root");
+			NSLog(@"returning new root");
 			rItem = [[[FAFOutlineViewRootItem alloc] initWithItem:object] autorelease];
 			[rItem setOutlineView:self];
 		}
 	}
+	//NSLog(@"rItem: %@", rItem);
+
 	return rItem;
+	 */
 }
 
 
 - (void) reloadData
 {
-	[rootItem autorelease]; // <-- this has to be *auto*release, because we might get handed back the same item.
-	rootItem = [[realDelegate rootItemForOutlineView:self] retain];
+	//[rootItem autorelease]; // <-- this has to be *auto*release, because we might get handed back the same item.
+	//rootItem = [[realDelegate rootItemForOutlineView:self] retain];
 	[rootItem reload];
 	[super reloadData];
 }
@@ -813,6 +843,32 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	
 }
 #endif
+
+
+
+#pragma mark Tool Tips
+
+- (NSString *)outlineView:(NSOutlineView *)ov 
+		   toolTipForCell:(NSCell *)cell 
+					 rect:(NSRectPointer)rect 
+			  tableColumn:(NSTableColumn *)tc 
+					 item:(id)item 
+			mouseLocation:(NSPoint)mouseLocation
+{
+	if  (delegateHandlesToolTips)
+	{
+		[realDelegate outlineView:ov 
+				   toolTipForCell:cell 
+							 rect:rect 
+					  tableColumn:tc 
+							 item:item 
+					mouseLocation:mouseLocation];
+	}
+	else// if ([item respondsToSelector:@selector(outlineView:tableColumn:))
+	{
+		[item toolTipForColumn:tc];
+	}
+}
 
 
 

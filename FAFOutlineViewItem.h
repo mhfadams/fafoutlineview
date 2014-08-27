@@ -58,6 +58,10 @@
 - (void) reload;
 
 - (NSArray*) sortDescriptors;
+
+/*!
+ \brief	Set the sort descriptors for the item to use. Set to nil to turn off sorting.
+ */
 - (void) setSortDescriptors: (NSArray*) array;
 
 - (int)columnSpanCount;
@@ -133,8 +137,12 @@ equivalent.
  */
 - (NSString*) labelColor;
 
-// defaults to 1;
+/*!
+ \brief	The number of columns the row should span, including tableColumn. Defaults to 1;
+ */
 - (int)spanForTableColumn:(NSTableColumn *)tableColumn;
+
+- (NSString *)toolTipForColumn:(NSTableColumn *)column;
 
 @end
 

@@ -31,6 +31,7 @@
 	self = [super initWithItem:item];
 	if (self != nil)
 	{
+		//NSLog(@"%s", __PRETTY_FUNCTION__);
 	}
 	return self;
 }
@@ -57,10 +58,8 @@
 			capacity = [representedObject count];
 			if ( ! children )
 			{	
-#if DEBUG
-				NSLog(@"FAFOutlineViewRootItem: will build children with class %@", NSStringFromClass([outlineView OutlineViewItemClass]) );
-#endif
-				[children release];
+				//NSLog(@"FAFOutlineViewRootItem: will build children with class %@", NSStringFromClass([outlineView OutlineViewItemClass]) );
+				//[children release];
 				children = [[NSMutableArray alloc] initWithCapacity:capacity];
 				unsigned i;
 				for (i = 0; i < capacity; i++)
@@ -74,7 +73,7 @@
 					if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
 				}
 				
-				if ( ! _sortDescriptors)
+				if ( ! _sortDescriptors && _shouldSort)
 				{
 					NSSortDescriptor* sortDesc = [[NSSortDescriptor alloc] initWithKey:
 												  [[[outlineView tableColumns] objectAtIndex:0] identifier] ascending:YES];
@@ -92,7 +91,7 @@
 			capacity = [[representedObject allKeys] count];
 			if ( ! children )
 			{	
-				[children release];
+				//[children release];
 				children = [[NSMutableArray alloc] initWithCapacity:capacity];
 				
 				NSEnumerator* e = [[representedObject allKeys] objectEnumerator];

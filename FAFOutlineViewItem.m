@@ -62,6 +62,7 @@
 - (void) setSortDescriptors: (NSArray*) array
 {
 	_sortDescriptors = [array retain];
+	if (nil == array) _shouldSort = NO;
 }
 
 - (int)columnSpanCount
@@ -112,7 +113,10 @@
 	 -> in this case telling each child to reload will suffice.
  
 	 */
-	
+
+	//[self numberOfChildren];
+	return;
+/*
 	if ([self expandable])
 	{
 		NSUInteger numberOfChildren;
@@ -130,15 +134,14 @@
 			[children makeObjectsPerformSelector:@selector(reload)];
 
 	}
-
+*/
 }
 
 - (BOOL) expandable
 {
 	if ( [representedObject respondsToSelector:@selector(expandable)] ) // e.g. custom object
 		return [representedObject expandable];
-	else if ( [representedObject respondsToSelector:@selector(count)] ||
-		[representedObject respondsToSelector:@selector(numberOfChildren)]) // collection
+	else if ( [representedObject isKindOfClass:[NSArray class]]) // collection
 		return YES;
 	
 	return NO;
@@ -240,6 +243,7 @@
 	[children addObject:item];
 	//NSLog(@"outlineView: %u", [[outlineView rootItem] numberOfChildren]);
 	//NSLog(@"%s %@ (%u)", __PRETTY_FUNCTION__, self, [self numberOfChildren]);
+	
 	if (_parent)
 		[outlineView reloadItem:_parent];
 	else
@@ -339,6 +343,9 @@
 	return [representedObject valueForKey:key];
 }
 
-
+- (NSString *)toolTipForColumn:(NSTableColumn *)column
+{
+	return nil;
+}
 
 @end

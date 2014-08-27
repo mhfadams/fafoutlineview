@@ -25,7 +25,7 @@ along with FAFOutlineView.  If not, see <http://www.gnu.org/licenses/>.
 
 @protocol FAFOutlineViewDelegate <NSObject>
 
-- (FAFOutlineViewItem*) rootItemForOutlineView:(FAFOutlineView*) outlineview;
+//- (FAFOutlineViewItem*) rootItemForOutlineView:(FAFOutlineView*) outlineview;
 
 
 @end

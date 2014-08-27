@@ -21,9 +21,9 @@
  */
 
 #import <Cocoa/Cocoa.h>
-#import "FAFOutlineView.h"
+//#import "FAFOutlineView.h"
 #import "FAFOutlineViewItem.h"
-#import "FAFOutlineViewProtocols.h"
+//#import "FAFOutlineViewProtocols.h"
 
 
 /*!
