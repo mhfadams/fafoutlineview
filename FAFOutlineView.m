@@ -446,7 +446,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		else
 		{
 			path = [NSBezierPath bezierPathWithRect:rect];
-			[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
+			//[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
+			[[NSColor clearColor] set];
 		}
 		[path fill];
 		//[NSGraphicsContext restoreGraphicsState];
@@ -694,12 +695,12 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void) textDidEndEditing: (NSNotification *) notification
 {
-   [super textDidEndEditing: notification];
-	
+
 	//NSLog(@"[self selectedRow]: %i", [self selectedRow]);
 	int tColumnCount = [[self tableColumns] count];
-	int nextColIndex;
-	for (nextColIndex = [self editedColumn] + 1;
+	int nextColIndex = [self editedColumn] + 1;
+	[super textDidEndEditing: notification]; // under Leopard, this line must be after above two lines
+	for (;
 		(( nextColIndex < tColumnCount ) && ( nextColIndex > -1 ));
 		nextColIndex++)
 	{
