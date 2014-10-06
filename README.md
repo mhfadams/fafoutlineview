@@ -22,24 +22,26 @@ FAFOutlineView uses a very different data source and delegate methodology than N
 Status
 ------
 This project is early beta.
-The structure is stable but the API might be adjusted, and there are no doubt unexplored bugs.
-I use it frequently, however, so it does get good end-use testing.
+The structure is stable but the API will be adjusted, and there are no doubt unexplored bugs.
+There are no formal tests, however as I use it in for all my outline and table views, it does get heavy end-use testing.
+It is being used and working in both code-created, and nib-loaded forms.
+Deployment Target is 10.4.
 
 
 DataSource and Delegation Methodology
 ---------------------------------------------
 FAFOutlineView decentralizes the NSOutlineView datasourcing. There is a controller object paired up with each model object. A default controller object (FAFOutlineViewItem) is provided for use with NSString, NSArray, and NSDictionary model objects, but can be subclassed for custom model objects.
-The delegate provides a root item and that root item (controller object) and its children then on act as the data source for their represented object.
+The delegate must provide a root item and that root item (controller object) and its children then on act as the data source for their represented object.
 Drag-and-drop is still handled by the outline view delegate.
 
 
 Basic Setup
 ----------------------------------------------
-- Create your usual NSOutlineView in your nib as usual;
-- implement [code]- (FAFOutlineViewItem*) rootItem;[/code] in your outline view delegate returning 
-(... to be continued ...)
+- Create your usual NSOutlineView in your nib or code as usual, substituting FAFOutlineView for NSOutlineView;
+- call [code] -\[FAFOutlineView setRootItem:(FAFOutlineViewItem*) rootItem\];[/code] with the root item of your choice.
+- call [code] -\[FAFOutlineView setDelegate:(id) object\];[/code] with the delegate of your choice.
 
-
+Other configuration options can be gleaned from the generated class documentation.
 
 
 
