@@ -23,7 +23,7 @@ Status
 ------
 This project is early beta.
 The structure is stable but the API will be adjusted, and there are no doubt unexplored bugs.
-There are no formal tests, however as I use it in for all my outline and table views, it does get heavy end-use testing.
+There are no formal tests, however as I use it for all my outline and table views, it does get heavy end-use testing.
 It is being used and working in both code-created, and nib-loaded forms.
 Deployment Target is 10.4.
 

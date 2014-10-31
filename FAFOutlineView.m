@@ -222,8 +222,9 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 -(void)dealloc
 {
+	//NSLog(@"%s", __PRETTY_FUNCTION__);
 	[rootItem release];
-	//[super dealloc]; //<- why cant I continue it ? why does [self setDataSource:] get called in [super dealloc] ?
+	[super dealloc]; // why does [self setDataSource:] get called in [super dealloc] ?
 }
 
 #pragma mark Transparency
@@ -307,10 +308,24 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void) reloadData
 {
-	//[rootItem autorelease]; // <-- this has to be *auto*release, because we might get handed back the same item.
-	//rootItem = [[realDelegate rootItemForOutlineView:self] retain];
 	[rootItem reload];
 	[super reloadData];
+	
+	if ([rootItem shouldSort])
+	{
+		NSArray* sortDescriptors = [rootItem sortDescriptors];
+		NSTableColumn* sortColumn = [self tableColumnWithIdentifier:[[sortDescriptors objectAtIndex:0] key]];			
+		BOOL sortOrder = [[sortDescriptors objectAtIndex:0] ascending];
+		NSString* sortIndicatorName;
+		if (sortOrder)
+			sortIndicatorName = @"NSAscendingSortIndicator";
+		else
+			sortIndicatorName = @"NSDescendingSortIndicator";
+		
+		[self setIndicatorImage:[NSImage imageNamed:sortIndicatorName]
+				  inTableColumn:sortColumn];
+	}
+
 }
 
 
@@ -322,6 +337,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	NSTimeInterval interval;
 	interval = [e timestamp] - lastClickTime;
 	//NSLog(@"Interval: %8.3f", interval);
+	//NSLog(@"[self clickedRow]: %i", [self clickedRow]);
 		
 	
 	if // LONG DOUBLE CLICK
@@ -331,6 +347,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		 (interval < LONG_DOUBLE_CLICK_MAX_INTERVAL) //SINGLE_CLICK_MAX_INTERVAL)
 		 &&
 		 (lastClickedRow == [self clickedRow])
+		 &&
+		 (lastClickedRow != -1)
 		 &&
 		 (lastClickedColumn == [self clickedColumn])
 		 )		 
@@ -402,18 +420,21 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void)drawRow:(int)row clipRect:(NSRect)clipRect
 {
+	//[super drawRow:row clipRect:clipRect]; return;
+
 #pragma mark Row Label Color (drawRow:clipRect:)
 	/*** LABEL DRAWING ***/
 	if (_shouldShowLabels)
 	{
-		//[NSGraphicsContext saveGraphicsState];
-		[self lockFocus];
+
 		NSRect rowRect = [self rectOfRow:row];
 		NSRect rect = NSMakeRect(rowRect.origin.x + 1.0,
 								 rowRect.origin.y + 1.0,
 								 rowRect.size.width - 2.0,
 								 rowRect.size.height - 1.0);
-		NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect];
+		/* enable rounded rect when performance permits */
+		//NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect];
+		NSBezierPath* path = [NSBezierPath bezierPathWithRect:rect];
 		NSString* labelColor = [[self itemAtRow:row] labelColor];
 		if ([labelColor isEqualToString:@"Red"])
 		{	
@@ -446,12 +467,10 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		else
 		{
 			path = [NSBezierPath bezierPathWithRect:rect];
-			//[[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:1.0 alpha:1.0] set];
 			[[NSColor clearColor] set];
 		}
 		[path fill];
-		//[NSGraphicsContext restoreGraphicsState];
-		[self unlockFocus];
+
 	}
 	
 	
@@ -478,7 +497,6 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	
 	/*** finish with default implementation ***/
 	[super drawRow:row clipRect:newClipRect];
-	//[super drawRow:row clipRect:clipRect];
 }
 
 #pragma mark Row Spanning (frameOfCellAtColumn:row:)
@@ -671,6 +689,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 }
 
 
+
 - (int)spanForTableColumn:(NSTableColumn *)tableColumn row:(int)row
 {
 	//NSLog(@"%s", __PRETTY_FUNCTION__);
@@ -681,9 +700,29 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	return 1;
 }
 
-- (void) tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
+- (void) outlineView:(NSOutlineView*)outlineView didClickTableColumn:(NSTableColumn *)tableColumn
 {
-	NSLog(@"%s", __PRETTY_FUNCTION__);
+	//NSLog(@"%s", __PRETTY_FUNCTION__);
+	NSArray* sortDescriptors = [rootItem sortDescriptors];
+	NSSortDescriptor* sortDescriptor = [sortDescriptors objectAtIndex:0];
+	if ([[tableColumn identifier] isEqual:[sortDescriptor key]])	// reverse sort order
+	{
+		[rootItem setSortDescriptors:[sortDescriptors valueForKey:@"reversedSortDescriptor"]];
+	}
+	else															// change sort key
+	{
+		// TODO: actually enumerate over sortDescriptors so we do loose all but first one.
+		[rootItem setSortDescriptors:
+		 [NSArray arrayWithObject:
+		  [[[NSSortDescriptor alloc] initWithKey:[tableColumn identifier] 
+									   ascending:[sortDescriptor ascending]] autorelease]
+		 ]
+		];
+		[self setIndicatorImage:nil inTableColumn:[self tableColumnWithIdentifier:[sortDescriptor key]]];
+
+	}
+	[self reloadData];
+
 }
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
@@ -716,6 +755,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	
 	
 } // textDidEndEditing
+
 
 
 - (void)keyDown:(NSEvent *)theEvent
@@ -763,6 +803,17 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 
 #pragma mark Message Forwarding
+
+- (BOOL) respondsToSelector:(SEL) selector
+{
+	//NSLog(NSStringFromSelector(selector));
+	if ([super respondsToSelector:selector])
+	{
+		return YES;
+	}
+	return [realDelegate respondsToSelector:selector];
+}
+
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
 {
 	return [realDelegate methodSignatureForSelector:aSelector];
@@ -778,6 +829,20 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
         [self doesNotRecognizeSelector:aSelector];
 }
 
+
+// ---------------------------------------
+#pragma mark outline view expansion state persitence
+// ---------------------------------------
+
+- (id)outlineView:(NSOutlineView *)outlineView persistentObjectForItem:(id)item
+{
+	return [realDelegate outlineView:outlineView persistentObjectForItem:item];
+}
+
+- (id)outlineView:(NSOutlineView *)outlineView itemForPersistentObject:(id)object
+{
+	return [realDelegate outlineView:outlineView itemForPersistentObject:object];
+}
 
 
 #pragma mark Drag and Drop (datasource)

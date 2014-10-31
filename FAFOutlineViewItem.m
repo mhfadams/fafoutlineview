@@ -54,6 +54,16 @@
 	outlineView = ov;
 }
 
+- (BOOL)shouldSort {
+    return _shouldSort;
+}
+
+- (void)setShouldSort:(BOOL)value {
+    if (_shouldSort != value) {
+        _shouldSort = value;
+    }
+}
+
 - (NSArray*) sortDescriptors
 {
 	return _sortDescriptors;
@@ -113,28 +123,23 @@
 	 -> in this case telling each child to reload will suffice.
  
 	 */
+	
+	/* IMPORTANT: do not call [self numberOfChildren] within this method,
+		as it will cause decent all the way into any indefinite/infinite datasource.
+	 */
 
-	//[self numberOfChildren];
-	return;
-/*
-	if ([self expandable])
+	static int assdfsadfsdfdfsdf = 9;
+	if ([self expandable] && (assdfsadfsdfdfsdf > 0)) // expansion state
 	{
-		NSUInteger numberOfChildren;
-		if ( [representedObject respondsToSelector:@selector(count)] ) // e.g. custom object
-			numberOfChildren = [representedObject count];
-		else if ( [representedObject respondsToSelector:@selector(numberOfChildren)] ) // collection
-			numberOfChildren = [representedObject numberOfChildren];
+		//[outlineView expandItem:self];
+		assdfsadfsdfdfsdf =  assdfsadfsdfdfsdf - 1;
+	}
+	if ([self expandable] && children)
+	{
 		
-		if ([children count] != numberOfChildren)
-		{
-			[children release]; children = nil;
-			[self numberOfChildren]; // force remake of children.
-		}
-		else
-			[children makeObjectsPerformSelector:@selector(reload)];
+		[children makeObjectsPerformSelector:@selector(reload)];
 
 	}
-*/
 }
 
 - (BOOL) expandable
@@ -173,7 +178,7 @@
 					[item setOutlineView:outlineView];
 					[children addObject:item];
 					[item release];
-					if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
+					//if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
 				}
 				
 			}
@@ -238,6 +243,7 @@
 - (void) addChild: (FAFOutlineViewItem*) item
 {
 	//NSLog(@"%s %@", __PRETTY_FUNCTION__, self);
+	//NSLog(@"outlineView: %u", [[outlineView rootItem] numberOfChildren]);
 	[item setParent:self];
 	[item setOutlineView:outlineView];
 	[children addObject:item];

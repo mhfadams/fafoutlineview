@@ -48,7 +48,8 @@
 
 - (unsigned) numberOfChildren
 {
-	//{
+	//if ( ! children )
+	{
 		unsigned capacity;
 		
 		/*** case 1 : root is NSArray ***/
@@ -115,22 +116,10 @@
 		if (children && _sortDescriptors && _shouldSort)
 		{
 			[children sortUsingDescriptors:_sortDescriptors];
-			NSTableColumn* sortColumn = [outlineView tableColumnWithIdentifier:[[_sortDescriptors objectAtIndex:0] key]];
-			BOOL sortOrder = [[_sortDescriptors objectAtIndex:0] ascending];
-			NSString* sortIndicatorName;
-			if (sortOrder)
-				sortIndicatorName = @"NSAscendingSortIndicator";
-			else
-				sortIndicatorName = @"NSDescendingSortIndicator";
-			
-			[outlineView setIndicatorImage:[NSImage imageNamed:sortIndicatorName]
-							 inTableColumn:sortColumn];
-			
-			
 		}
 
 	
-	//}
+	}
 	
 	unsigned cnt = [children count];
 	

@@ -57,6 +57,9 @@
  */
 - (void) reload;
 
+- (BOOL)shouldSort;
+- (void)setShouldSort:(BOOL)value;
+
 - (NSArray*) sortDescriptors;
 
 /*!
