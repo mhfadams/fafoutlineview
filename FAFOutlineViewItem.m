@@ -25,11 +25,12 @@
 
 @implementation FAFOutlineViewItem
 
-- (id) initWithItem: (id) item
+- (id) initWithItem: (id) item inOutlineView:(FAFOutlineView*) ov
 {
 	self = [super init];
 	if (self != nil)
 	{
+		outlineView = ov;
 		representedObject = [item retain];
 		children = nil;
 		_shouldSort = YES;
@@ -48,10 +49,6 @@
 - (FAFOutlineView*) outlineView
 {
 	return outlineView;
-}
-- (void) setOutlineView: (FAFOutlineView*) ov
-{
-	outlineView = ov;
 }
 
 - (BOOL)shouldSort {

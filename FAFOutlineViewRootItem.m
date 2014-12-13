@@ -26,9 +26,9 @@
 @implementation FAFOutlineViewRootItem
 
 
-- (id) initWithItem: (id) item
+- (id) initWithItem: (id) item inOutlineView:(FAFOutlineView*) ov
 {
-	self = [super initWithItem:item];
+	self = [super initWithItem:item inOutlineView:ov];
 	if (self != nil)
 	{
 		//NSLog(@"%s", __PRETTY_FUNCTION__);
@@ -48,6 +48,7 @@
 
 - (unsigned) numberOfChildren
 {
+
 	//if ( ! children )
 	{
 		unsigned capacity;
@@ -65,10 +66,12 @@
 				unsigned i;
 				for (i = 0; i < capacity; i++)
 				{
-					FAFOutlineViewItem* item = [[[outlineView OutlineViewItemClass] alloc] initWithItem: 
-												[representedObject objectAtIndex:i]];
+					FAFOutlineViewItem* item = [[[outlineView OutlineViewItemClass] alloc]
+												initWithItem:[representedObject objectAtIndex:i]
+												inOutlineView:outlineView
+					];
 					[item setParent:self];
-					[item setOutlineView:outlineView];
+					//NSLog(@"item: %@", item);
 					[children addObject:item];
 					[item release];
 					if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;

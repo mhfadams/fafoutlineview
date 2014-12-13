@@ -44,11 +44,10 @@
 	int							_columnSpanCount;
 }
 
-- (id) initWithItem: (id) item;
+- (id) initWithItem: (id) item inOutlineView:(FAFOutlineView*) ov;
+- (FAFOutlineViewItem *)parent;
+- (void)setParent:(FAFOutlineViewItem *)value;
 
-
-- (FAFOutlineViewItem*) parent;
-- (void) setParent: (FAFOutlineViewItem*) item;
 
 /*!
  \brief	forces item to syncronize with model layer.
@@ -74,10 +73,6 @@
 \brief You normally can rely on the default implementation of this method.
  */
 - (FAFOutlineView*) outlineView;
-/*!
-\brief You normally can rely on the default implementation of this method.
- */
-- (void) setOutlineView: (FAFOutlineView*) ov;
 
 /*!
 \brief You normally can rely on the default implementation of this method.

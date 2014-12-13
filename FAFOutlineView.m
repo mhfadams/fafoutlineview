@@ -92,8 +92,9 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		[self setGridStyleMask:NSTableViewGridNone];
 		_shouldShowLabels = NO;
 		
-		OutlineViewItemClass = [FAFOutlineViewItem class];
 		
+		OutlineViewItemClass = [FAFOutlineViewItem class];
+	
 		delegateHandlesToolTips = NSMixedState;
 	}
 	inited = 1;
@@ -271,8 +272,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (FAFOutlineViewRootItem*) rootItemWithObject:(id) object
 {
-	rItem = [[[FAFOutlineViewRootItem alloc] initWithItem:object] autorelease];
-	[rItem setOutlineView:self];
+	rItem = [[[FAFOutlineViewRootItem alloc] initWithItem:object inOutlineView:self] autorelease];
 	return rItem;
 
 	/* NOTICE:
@@ -454,7 +454,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		}
 		else if ([labelColor isEqualToString:@"Blue"])
 		{	
-			[[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:1.0 alpha:0.6] set];
+			[[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.8 alpha:0.6] set];
 		}
 		else if ([labelColor isEqualToString:@"Purple"])
 		{	
@@ -711,11 +711,12 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	}
 	else															// change sort key
 	{
-		// TODO: actually enumerate over sortDescriptors so we do loose all but first one.
+		// TODO: actually enumerate over sortDescriptors so we don loose all but first one.
 		[rootItem setSortDescriptors:
 		 [NSArray arrayWithObject:
 		  [[[NSSortDescriptor alloc] initWithKey:[tableColumn identifier] 
-									   ascending:[sortDescriptor ascending]] autorelease]
+									   ascending:[sortDescriptor ascending]
+										selector:[sortDescriptor selector]] autorelease]
 		 ]
 		];
 		[self setIndicatorImage:nil inTableColumn:[self tableColumnWithIdentifier:[sortDescriptor key]]];
@@ -923,7 +924,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 {
 	if  (delegateHandlesToolTips)
 	{
-		[realDelegate outlineView:ov 
+		return [realDelegate outlineView:ov 
 				   toolTipForCell:cell 
 							 rect:rect 
 					  tableColumn:tc 
@@ -932,8 +933,9 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	}
 	else// if ([item respondsToSelector:@selector(outlineView:tableColumn:))
 	{
-		[item toolTipForColumn:tc];
+		return [item toolTipForColumn:tc];
 	}
+	return @"";
 }
 
 
