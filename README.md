@@ -49,7 +49,7 @@ Other configuration options can be gleaned from the generated class documentatio
 
 Licensing
 ---------
-This project is licensed under the LGPL.
+This project is licensed under the BSD-3-clause.
 However, some segments of the code borrowed from others may be obtainable from the original authors under less restrictive licensing:
 - NDSDKCompatibility.h <https://github.com/nathanday/ndalias>
 - (FAF)NSBezierPathAdditions <https://github.com/fishman/mail.appetizer>
