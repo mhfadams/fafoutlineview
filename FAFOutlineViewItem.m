@@ -83,6 +83,10 @@
 {
 	_sortDescriptors = [array retain];
 	if (nil == array) _shouldSort = NO;
+	if (_sortDescriptors && _shouldSort)
+	{
+		[children sortUsingDescriptors:_sortDescriptors];
+	}
 }
 
 - (int)columnSpanCount
@@ -321,6 +325,11 @@
 	return NO; //[tableColumn isEditable];
 }
 
+- (BOOL) shouldAutoEditAtColumn:(NSTableColumn *)tableColumn
+{
+	return [self shouldEditAtColumn:tableColumn];
+}
+
 - (NSString*) labelColor
 {
 	if ( [representedObject respondsToSelector:@selector(labelColor)] )
@@ -369,6 +378,7 @@
 
 - (id) valueForUndefinedKey: (NSString*) key
 {
+	//NSLog(@"%s %@", __PRETTY_FUNCTION__, key);
 	return [representedObject valueForKey:key];
 }
 

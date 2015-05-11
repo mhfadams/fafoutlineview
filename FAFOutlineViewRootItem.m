@@ -90,12 +90,6 @@
 					if ([[representedObject objectAtIndex:i] isKindOfClass:[NSString class]]) _shouldSort = NO;
 				}
 				
-				if ( ! _sortDescriptors && _shouldSort)
-				{
-					NSSortDescriptor* sortDesc = [[NSSortDescriptor alloc] initWithKey:
-												  [[[outlineView tableColumns] objectAtIndex:0] identifier] ascending:YES];
-					[self setSortDescriptors:[NSArray arrayWithObject:sortDesc] ];
-				}
 				
 			}
 		}
@@ -131,14 +125,17 @@
 			
 		}
 		
-		if (children && _sortDescriptors && _shouldSort)
-		{
-			[children sortUsingDescriptors:_sortDescriptors];
-		}
 
 	
 	}
 	
+	if ( ! _sortDescriptors && _shouldSort)
+	{
+		NSSortDescriptor* sortDesc = [[NSSortDescriptor alloc] initWithKey:
+									  [[[outlineView tableColumns] objectAtIndex:0] identifier] ascending:YES];
+		self.sortDescriptors = [NSArray arrayWithObject:sortDesc];
+	}
+
 	unsigned cnt = [children count];
 	
 	//NSLog(@"%s %@ (%u)", __PRETTY_FUNCTION__, self, cnt);

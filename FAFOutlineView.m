@@ -123,6 +123,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void)setOutlineViewItemClass:(Class)value
 {
+	//NSLog(@"%s", __PRETTY_FUNCTION__);
 	if ( ! realDelegate)
 		OutlineViewItemClass = value;
 	else
@@ -328,6 +329,14 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	
 	if ([rootItem shouldSort])
 	{
+		// setIndicatorImage doesnt unset indicator for other columns, so ...
+		int tMax = [[self tableColumns] count];
+		for (int tIndex = 0; tIndex < tMax; tIndex++)
+		{
+			[self setIndicatorImage:nil inTableColumn:[[self tableColumns] objectAtIndex:tIndex]];
+		}
+		
+		
 		NSArray* sortDescriptors = [rootItem sortDescriptors];
 		NSTableColumn* sortColumn = [self tableColumnWithIdentifier:[[sortDescriptors objectAtIndex:0] key]];			
 		BOOL sortOrder = [[sortDescriptors objectAtIndex:0] ascending];
@@ -339,6 +348,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 		
 		[self setIndicatorImage:[NSImage imageNamed:sortIndicatorName]
 				  inTableColumn:sortColumn];
+		
+		
 	}
 
 }
@@ -734,7 +745,6 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 										selector:[sortDescriptor selector]] autorelease]
 		 ]
 		];
-		[self setIndicatorImage:nil inTableColumn:[self tableColumnWithIdentifier:[sortDescriptor key]]];
 
 	}
 	[self reloadData];
@@ -754,13 +764,13 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	//NSLog(@"[self selectedRow]: %i", [self selectedRow]);
 	int tColumnCount = [[self tableColumns] count];
 	int nextColIndex = [self editedColumn] + 1;
-	[super textDidEndEditing: notification]; // under Leopard, this line must be after above two lines
+	[super textDidEndEditing: notification]; // under Leopard, this line must be after the above two lines
 	for (;
 		(( nextColIndex < tColumnCount ) && ( nextColIndex > -1 ));
 		nextColIndex++)
 	{
 		//NSLog(@"Should edit: %i", nextColIndex);
-		if ([[self itemAtRow:[self selectedRow]] shouldEditAtColumn:[[self tableColumns] objectAtIndex:nextColIndex]])
+		if ([[self itemAtRow:[self selectedRow]] shouldAutoEditAtColumn:[[self tableColumns] objectAtIndex:nextColIndex]])
 		{		
 			[self editColumn:nextColIndex row:[self selectedRow] withEvent:nil select:YES];
 			break;

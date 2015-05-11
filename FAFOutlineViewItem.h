@@ -147,6 +147,12 @@ equivalent.
 - (BOOL) shouldEditAtColumn:(NSTableColumn *)tableColumn;
 
 /*!
+\brief Return NO to only allow edit when explicitly clicked on.
+		Defaults to YES.
+ */
+- (BOOL) shouldAutoEditAtColumn:(NSTableColumn *)tableColumn;
+
+/*!
 \brief You must override this method if supplying custom representedObject. Do not continue to super.
  
  By default simply returns [representedObject labelColor], if available, otherwise appropriate calls for NSArray.
