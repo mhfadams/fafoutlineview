@@ -317,12 +317,12 @@
 
 - (BOOL) shouldEditAtColumn:(NSTableColumn *)tableColumn
 {
-	//NSLog(@"%s", __PRETTY_FUNCTION__);
+	//if ([tableColumn isEditable]) NSLog(@"%s", __PRETTY_FUNCTION__);
 
 	if ([self spanForTableColumn:tableColumn] == 0)
 		return NO;
 	
-	return NO; //[tableColumn isEditable];
+	return YES; //[tableColumn isEditable];
 }
 
 - (BOOL) shouldAutoEditAtColumn:(NSTableColumn *)tableColumn
@@ -385,6 +385,17 @@
 - (NSString *)toolTipForColumn:(NSTableColumn *)column
 {
 	return nil;
+}
+
+- (NSComparisonResult)compare:(id)anotherObject
+{
+#ifndef NDEBUG
+	if ( ! [representedObject respondsToSelector:@selector(compare:)] )
+		[NSException raise:NSGenericException format:@"'compare:' was invoked but The represented object of class '%@' does not implement 'compare:'", NSStringFromClass([representedObject class])];
+#endif
+	
+	// remember, Cocoa is going to pass another FAFOutlineViewItem to compare to...
+	return [representedObject compare:[anotherObject representedObject]];
 }
 
 @end
