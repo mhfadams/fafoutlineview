@@ -151,12 +151,20 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 	 */
 	//NSLog(@"%s", __PRETTY_FUNCTION__);
 	if (inited == 0) [self setup];
+	
+#ifndef NDEBUG
+	if ( ! [(NSTableColumn*)[[self tableColumns] objectAtIndex:0] identifier] )
+	{
+		//[NSException raise:@"FAFConfigurationException"
+		//			format:@"Error: All FAFOutlineView columns must have their identifier set!"];
+	}
+#endif
 
 	if (object)
 	{
 		if ( ! rootItem )
 		{
-			[NSException raise:NSInternalInconsistencyException
+			[NSException raise:@"FAFConfigurationException"
 						format:@"%s: Error: you must call setRootItem: before setting my delegate.", __PRETTY_FUNCTION__];
 			NSLog(@"%s: Error: you must call setRootItem: before setting my delegate.", __PRETTY_FUNCTION__);
 			NSLog(@"Example call: [myOutlineView setRootItem:[myOutlineView rootItemWithObject:[NSMutableArray new]]];");
@@ -215,6 +223,10 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 
 - (void)setDoubleAction:(SEL)aSelector
 {
+	if ( ! realTarget )
+	{
+		[NSException raise:NSGenericException format:@"FAFOutlineView => setDoubleAction: called without first setting a target!"];
+	}
 	realDoubleAction = aSelector;
 	if (realDoubleAction == NULL)
 		NSLog(@"FAFOutlineView edit mode: short-double-click");
@@ -415,10 +427,10 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 {
 	//NSLog(@"%s", __PRETTY_FUNCTION__);
 	_canEditOnNextClick = NO;
+	int row = [self selectedRow];
 	if (realDoubleAction == NULL)
 	{
-		int row = [self selectedRow];
-		if (row != -1)
+		if ( (row != -1) && (row == [self clickedRow]) )
 		{
 			if ([self outlineView:self
 			shouldEditTableColumn:[[self tableColumns] objectAtIndex:[self clickedColumn]] 
@@ -426,7 +438,7 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 				[self editColumn:lastClickedColumn row:row withEvent:[NSApp currentEvent] select:YES];
 		}
 	}
-	else
+	else if (row == [self clickedRow])
 		[realTarget performSelector:realDoubleAction withObject:sender];
 		
 }
@@ -459,8 +471,8 @@ const NSTimeInterval LONG_DOUBLE_CLICK_MAX_INTERVAL = 2.0;
 								 rowRect.size.width - 2.0,
 								 rowRect.size.height - 1.0);
 		/* enable rounded rect when performance permits */
-		//NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect];
-		NSBezierPath* path = [NSBezierPath bezierPathWithRect:rect];
+		NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect];
+		//NSBezierPath* path = [NSBezierPath bezierPathWithRect:rect];
 		NSString* labelColor = [[self itemAtRow:row] labelColor];
 		if ([labelColor isEqualToString:@"Red"])
 		{	
